@@ -7,8 +7,7 @@ class Process:
         self.service_time = service_time  # 预估运行时间
         self.priority = priority  # 进程优先级 (越小越高)
         self.level = 0            # 就绪队列等级
-        self.start_time = None    # 运行开始时刻
-        # self.start_time = [(s1, t1), (s2, t2), ..., (sx, tx)]
+        self.start_time = []    # 运行开始时刻
         self.running_time = 0     # 已运行时间
         self.finish_time = None   # 运行结束时刻
 
@@ -24,7 +23,7 @@ def load_process(path: str) -> list[Process]:
 def write_process(path: str, results: list[Process]) -> None:
     with open(path, 'w') as file:
         for pro in results:
-            line = f'{pro.pid} {pro.arrival_time} {pro.start_time} {pro.finish_time}'
+            line = f'{pro.pid} {pro.arrival_time} {pro.start_time[0][0]} {pro.finish_time}'
             file.write(line + '\n')
 
 def display_menu() -> None:

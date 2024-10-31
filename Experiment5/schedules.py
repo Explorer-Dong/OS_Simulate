@@ -17,11 +17,11 @@ def FCFS(processes: list[Process]) -> list[Process]:
         if len(readyPCB) == 0:
             pro = newPCB.popleft()
             readyPCB.append(pro)
-        now_pro = readyPCB.popleft()
+        now_pro: Process = readyPCB.popleft()
     
         # 维护时钟和进程信息
         time = max(time, now_pro.arrival_time)
-        now_pro.start_time = time
+        now_pro.start_time.append((time, now_pro.service_time))
         time += now_pro.service_time
         now_pro.finish_time = time
         res.append(now_pro)
@@ -52,7 +52,7 @@ def SJF(processes: list[Process]) -> list[Process]:
 
         # 维护时钟和进程信息
         time = max(time, now_pro.arrival_time)
-        now_pro.start_time = time
+        now_pro.start_time.append((time, now_pro.service_time))
         time += now_pro.service_time
         now_pro.finish_time = time
         res.append(now_pro)
@@ -61,7 +61,7 @@ def SJF(processes: list[Process]) -> list[Process]:
         while len(newPCB) and newPCB[0].arrival_time <= time:
             pro = newPCB.popleft()
             heapq.heappush(readyPCB, (pro.service_time, pro.arrival_time, pro))
-    
+
     return res
 
 def SRTF(processes: list[Process]) -> list[Process]:
@@ -93,17 +93,17 @@ def SRTF(processes: list[Process]) -> list[Process]:
                 heapq.heappush(readyPCB, (pro.service_time - pro.running_time, pro.arrival_time, pro))
             else:
                 seized = True
-                now_pro.running_time += pro.arrival_time - time
-                if now_pro.running_time and now_pro.start_time == None:
-                    now_pro.start_time = time
-                time += pro.arrival_time - time
+                delta_t = pro.arrival_time - time
+                now_pro.running_time += delta_t
+                if delta_t > 0:
+                    now_pro.start_time.append((time, delta_t))
+                time += delta_t
                 heapq.heappush(readyPCB, (now_pro.service_time - now_pro.running_time, now_pro.arrival_time, now_pro))
                 newPCB.popleft()
                 heapq.heappush(readyPCB, (pro.service_time - pro.running_time, pro.arrival_time, pro))
                 break
         if not seized:
-            if now_pro.start_time == None:
-                now_pro.start_time = time
+            now_pro.start_time.append((time, now_pro.service_time - now_pro.running_time))
             now_pro.finish_time = time + (now_pro.service_time - now_pro.running_time)
             time = now_pro.finish_time
             res.append(now_pro)
@@ -129,7 +129,7 @@ def HRRF(processes: list[Process]) -> list[Process]:
 
         # 维护时钟和进程信息
         time = max(time, now_pro.arrival_time)
-        now_pro.start_time = time
+        now_pro.start_time.append((time, now_pro.service_time))
         time += now_pro.service_time
         now_pro.finish_time = time
         res.append(now_pro)
@@ -144,7 +144,7 @@ def HRRF(processes: list[Process]) -> list[Process]:
         while len(newPCB) and newPCB[0].arrival_time <= time:
             pro = newPCB.popleft()
             heapq.heappush(readyPCB, (-(time - pro.arrival_time) / pro.service_time, pro))
-    
+
     return res
 
 def Pr(processes: list[Process]) -> list[Process]:
@@ -166,7 +166,7 @@ def Pr(processes: list[Process]) -> list[Process]:
 
         # 维护时钟和进程信息
         time = max(time, now_pro.arrival_time)
-        now_pro.start_time = time
+        now_pro.start_time.append((time, now_pro.service_time))
         time += now_pro.service_time
         now_pro.finish_time = time
         res.append(now_pro)
@@ -175,7 +175,7 @@ def Pr(processes: list[Process]) -> list[Process]:
         while len(newPCB) and newPCB[0].arrival_time <= time:
             pro = newPCB.popleft()
             heapq.heappush(readyPCB, (pro.priority, pro))
-    
+
     return res
 
 def RR(processes: list[Process], step: int=4) -> list[Process]:
@@ -197,14 +197,20 @@ def RR(processes: list[Process], step: int=4) -> list[Process]:
 
         # 维护时钟和进程信息 & 更新就绪队列信息
         time = max(time, now_pro.arrival_time)
-        now_pro.start_time = time if now_pro.start_time == None else now_pro.start_time
         if now_pro.running_time + step >= now_pro.service_time:
-            now_pro.finish_time = time + (now_pro.service_time - now_pro.running_time)
-            time += now_pro.service_time - now_pro.running_time
+            # 可以执行完毕
+            delta_t = now_pro.service_time - now_pro.running_time
+            now_pro.start_time.append((time, delta_t))
+            now_pro.finish_time = time + delta_t
+            time += delta_t
             res.append(now_pro)
         else:
+            # 无法执行完毕
             now_pro.running_time += step
+            now_pro.start_time.append((time, step))
             time += step
+
+            # 更新就绪队列信息
             while len(newPCB) and newPCB[0].arrival_time <= time:
                 readyPCB.append(newPCB.popleft())
             readyPCB.append(now_pro)
@@ -235,16 +241,20 @@ def MLFQ(processes: list[Process], level: int=3) -> list[Process]:
 
         # 维护时钟和进程信息 & 更新就绪队列信息
         time = max(time, now_pro.arrival_time)
-        now_pro.start_time = time if now_pro.start_time == None else now_pro.start_time
         if now_pro.running_time + (1 << now_level) >= now_pro.service_time:
             # 可以执行完毕
-            now_pro.finish_time = time + (now_pro.service_time - now_pro.running_time)
-            time += now_pro.service_time - now_pro.running_time
+            delta_t = now_pro.service_time - now_pro.running_time
+            now_pro.start_time.append((time, delta_t))
+            now_pro.finish_time = time + delta_t
+            time += delta_t
             res.append(now_pro)
         else:
             # 无法执行完毕
+            now_pro.start_time.append((time, 1 << now_level))
             now_pro.running_time += (1 << now_level)
             time += 1 << now_level
+
+            # 更新就绪队列信息
             while len(newPCB) and newPCB[0].arrival_time <= time:
                 readyPCB[0].append(newPCB.popleft())
             now_level = min(now_level + 1, level - 1)
