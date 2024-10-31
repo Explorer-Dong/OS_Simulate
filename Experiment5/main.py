@@ -10,12 +10,14 @@ from schedules import *
 ├── main.py
 ├── pre.py
 ├── schedules.py
+├── window.py
 
 其中 `./in` 是输入文件夹 `./out` 是输出文件夹 `./std` 是标答文件夹。
 
 `main.py` 是程序的入口部分，负责人机交互选择合适的算法测试数据；
 `pre.py` 是程序的框架部分，负责构造进程类、I/O 逻辑和测试逻辑；
-`schedules.py` 是程序的算法部分，负责 7 个调度算法的逻辑。
+`schedules.py` 是程序的算法部分，负责 7 个调度算法的逻辑；
+`window.py` 是程序的可视化部分，实现对每一个测试样例和算法进行多帧的动态可视化
 
 """
 
