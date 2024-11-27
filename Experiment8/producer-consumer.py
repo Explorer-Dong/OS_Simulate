@@ -15,6 +15,8 @@ class QueueVisualizer:
         self.master = master
         self.max_size = max_size
         self.shop = ["None" for _ in range(max_size)]
+        self.put_idx = 0
+        self.get_idx = 0
 
         # 设置画布
         self.width, self.height = 1000, 400
@@ -71,28 +73,34 @@ class QueueVisualizer:
             self.canvas.itemconfig(f"text_{i}", text=item)
         self.canvas.update()
 
+    def search_empty_slot(self, start=0, cmp=True):
+        """查找空位，cmp=True 查找空位，cmp=False 查找产品"""
+        # print(self.shop[start], self.shop[start % self.max_size] == "None" == cmp)
+        while start < 2 * self.max_size:
+            if (self.shop[start % self.max_size] == "None") == cmp:
+                return start % self.max_size
+            start += 1
+        return None
+
     def put(self, obj):
         """将元素放入队列，并更新格子的状态"""
-        i = 0
-        while i < self.max_size:
-            if self.shop[i] == "None":
-                self.shop[i] = obj
-                self.update_boxes()
-                return
-            i += 1
-        logging.warning("Queue is full, cannot put element")
+        if self.put_idx is None:
+            self.put_idx = self.search_empty_slot()
+        self.shop[self.put_idx] = obj
+        self.update_boxes()
+        self.put_idx = self.search_empty_slot(start=self.put_idx + 1)
 
     def get(self):
         """从队列中获取元素，并更新格子的状态"""
-        i = 0
-        while i < self.max_size:
-            if self.shop[i] != "None":
-                obj = self.shop[i]
-                self.shop[i] = "None"
-                self.update_boxes()
-                return obj
-            i += 1
-        logging.warning("Queue is empty, cannot get element")
+        if self.get_idx is None:
+            self.get_idx = self.search_empty_slot(cmp=False)
+
+        obj = self.shop[self.get_idx]
+        self.shop[self.get_idx] = "None"
+        self.update_boxes()
+
+        self.get_idx = self.search_empty_slot(start=self.get_idx + 1, cmp=False)
+        return obj
 
     def start(self):
         global stop_signal
