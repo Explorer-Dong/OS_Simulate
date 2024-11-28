@@ -5,13 +5,13 @@ from tkinter import font
 
 
 class Fork:
-    def __init__(self, canvas, r, theta, width, offset):
+    def __init__(self, canvas, r, theta, width, offset, line_id=None):
         self.const_init = (r, theta, width, offset)
         self.canvas = canvas
         p = np.array([np.cos(theta), np.sin(theta)])
         self.p1 = p * (r + width) + offset
         self.p2 = p * (r - width) + offset
-        self.line_id = None
+        self.line_id = line_id
         self.draw()
 
     def rotate(self, theta):
@@ -23,7 +23,7 @@ class Fork:
         self.draw()
 
     def restore(self):
-        self.__init__(self.canvas, *self.const_init)
+        self.__init__(self.canvas, *self.const_init, line_id=self.line_id)
 
     def draw(self):
         if self.line_id is not None:
@@ -36,6 +36,8 @@ class Fork:
 class Philosopher:
     def __init__(self, canvas, r, theta, size, offset):
         self.canvas = canvas
+        self.text_id = None
+        self.circle_id = None
         p = np.array([np.cos(theta), np.sin(theta)])
         self.p1 = p * r + np.array([size, size]) + offset
         self.p2 = p * r + np.array([-size, -size]) + offset
@@ -44,10 +46,14 @@ class Philosopher:
         self.draw()
 
     def draw(self):
-        self.canvas.create_oval(
+        if self.text_id is not None:
+            self.canvas.delete(self.text_id)
+        if self.circle_id is not None:
+            self.canvas.delete(self.circle_id)
+        self.circle_id = self.canvas.create_oval(
             *self.p1, *self.p2, fill=self.color
         )
-        self.canvas.create_text(
+        self.text_id = self.canvas.create_text(
             *((self.p1 + self.p2) / 2),
             text=self.state, fill="black", font=font.Font(
                 family="Cursive", size=15, slant="italic"
@@ -115,29 +121,23 @@ class Visualizer:
 
         self.canvas.update()
 
-    def get(self, philosopher_id, fork_id, eating=False):
+    def get_fork(self, philosopher_id, fork_id):
         theta = 2 * np.pi / self.num
         philosopher = self.philosophers[philosopher_id]
         fork = self.forks[fork_id]
 
         if philosopher_id == fork_id:
-            fork.rotate(theta / 2)
-        else:
             fork.rotate(-theta / 2)
-
-        if eating:
-            philosopher.state_change("eating")
         else:
-            philosopher.state_change("hungry")
+            fork.rotate(theta / 2)
 
-    def put(self, philosopher_id, fork_id, thinking=False):
+    def put_fork(self, philosopher_id, fork_id):
         philosopher = self.philosophers[philosopher_id]
         fork = self.forks[fork_id]
         fork.restore()
-        if thinking:
-            philosopher.state_change("thinking")
-        else:
-            philosopher.state_change("hungry")
+
+    def change_state(self, philosopher_id, state):
+        self.philosophers[philosopher_id].state_change(state)
 
 
 def main():
