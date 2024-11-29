@@ -4,7 +4,7 @@ import tkinter as tk
 import logging
 from time import sleep
 
-s1 = Semaphore(1)  # 缓冲
+mutex = Semaphore(1)  # 互斥锁
 s2 = Semaphore(10)  # 空位
 s3 = Semaphore(0)  # 产品
 stop_signal = False  # 停止信号
@@ -128,22 +128,22 @@ def producer(Pno):
     while not stop_signal:
         production = random.choice(['apple', 'banana', 'cherry'])  # 随机生产产品
         s2.acquire()
-        s1.acquire()
+        mutex.acquire()
         q.put(production)  # 放入产品
         logging.info(f"Producer {Pno} has put {production} into the queue")
         sleep(0.2)  # 随机等待时间
-        s1.release()
+        mutex.release()
         s3.release()
 
 
 def consumer(Cno):
     while not stop_signal:
         s3.acquire()
-        s1.acquire()
+        mutex.acquire()
         production = q.get()
         logging.info(f"Consumer {Cno} has taken {production} from the queue")
         sleep(0.3)  # 随机等待时间
-        s1.release()
+        mutex.release()
         s2.release()
 
 
