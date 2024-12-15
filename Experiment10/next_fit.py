@@ -1,8 +1,9 @@
 from space import Space
 from first_fit import FirstFit
 
+
 class NextFit(FirstFit):
-    def __init__(self, maxLength=1024*1024):
+    def __init__(self, maxLength=1024 * 1024):
         super().__init__(maxLength=maxLength)
         self.now_space: Space = self.head.next  # 上一次查询结束指向的空间
 
@@ -16,6 +17,7 @@ class NextFit(FirstFit):
         if not search_all:
             self.now_space = self.head.next
             self.allocate(length, job)
+
 
 if __name__ == "__main__":
     # 注意：暂不支持立刻释放刚刚申请的内存空间

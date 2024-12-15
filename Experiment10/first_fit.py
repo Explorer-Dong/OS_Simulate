@@ -1,7 +1,8 @@
 from space import Space
 
+
 class FirstFit(object):
-    def __init__(self, maxLength=1024*1024):
+    def __init__(self, maxLength=1024 * 1024):
         self.head = Space(status='NULL')
         self.tail = Space(status='NULL')
         space = Space(length=maxLength)
@@ -38,18 +39,26 @@ class FirstFit(object):
                 )
             )
             space = space.next
-        print('-'*50)
+        print('-' * 50)
+
+    def tolist(self):
+        space = self.head.next
+        result = []
+        while space is not self.tail:
+            result.append((space.start_address, space.length, space.job, space.status))
+            space = space.next
+        return result
 
 
 if __name__ == "__main__":
     first_fit = FirstFit(20)
-    
+
     first_fit.allocate(10, "Job1")
     first_fit.print_space_list()
 
     first_fit.allocate(8, "Job2")
     first_fit.print_space_list()
-    
+
     first_fit.free("Job1")
     first_fit.print_space_list()
 

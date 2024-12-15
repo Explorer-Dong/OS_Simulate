@@ -19,6 +19,12 @@ class Space(object):
         if length > self.length:
             print("Not enough space available")
             return None
+
+        if length == self.length:
+            self.status = "Allocated"
+            self.job = job
+            return self
+
         new_space = Space(
             start_address=self.start_address,
             length=length,
@@ -44,6 +50,7 @@ class Space(object):
         if self.prev.isFree():
             # 将上一个结点合并到当前结点
             self.length += self.prev.length
+            self.start_address = self.prev.start_address
             self.prev = self.prev.prev
             self.prev.next = self
 
