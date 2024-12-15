@@ -24,7 +24,7 @@ def process_thread(i):
     while running:
         # 申请内存
         P(mutex)
-        allocated_pages = memory_manager.allocate_memory(num_pages = 10)
+        allocated_pages = memory_manager.allocate_memory(num_pages=10)
         V(mutex)
 
         # 申请不到时跳过
@@ -33,7 +33,7 @@ def process_thread(i):
 
         fifo_algorithm = FIFO(9)
         lru_algorithm = LRU(9)
-        
+
         # 申请到内存后，开始执行进程
         process = Process(i, memory_manager, lru_algorithm, allocated_pages)
         process.run()
@@ -44,6 +44,7 @@ def process_thread(i):
         V(mutex)
         input()
 
+
 def main():
     global memory_manager
 
@@ -52,11 +53,10 @@ def main():
     num_pages = total_memory_size // page_size
     memory_manager = MemoryManager(total_memory_size, page_size, num_pages)
 
-    
-
-    processes = [threading.Thread(target = process_thread, args = (i,)) for i in range(num_process)]
+    processes = [threading.Thread(target=process_thread, args=(i,)) for i in range(num_process)]
     for process in processes:
         process.start()
+
 
 if __name__ == "__main__":
     main()

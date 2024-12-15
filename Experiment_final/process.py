@@ -7,9 +7,8 @@ import math
 # 每个进程随机生成200次逻辑地址
 num_random_logical_addresses = 200
 x = [i for i in range(64)]
-p = [1/math.sqrt(i+1) for i in range(64)]
-# 1/math.sqrt(i+1)
-# math.exp(-i)
+p = [1 / math.sqrt(i + 1) for i in range(64)]
+
 
 def number_of_certain_probability(sequence, probability):
     x = random.uniform(0, sum(p))
@@ -22,7 +21,8 @@ def number_of_certain_probability(sequence, probability):
 
 
 class Process:
-    def __init__(self, process_id: int, memory_manager: MemoryManager, page_algorithm: PageReplacementAlgorithm, allocated_pages):
+    def __init__(self, process_id: int, memory_manager: MemoryManager, page_algorithm: PageReplacementAlgorithm,
+                 allocated_pages):
         """
         初始化进程对象
         :param process_id: 进程id
@@ -45,11 +45,11 @@ class Process:
             sleep_time = self.generate_sleep_time()
             time.sleep(sleep_time)
         print(f"进程 {self.process_id} 结束执行. Page faults: {self.cnt_page_faults}")
-        print(f"进程 {self.process_id} 缺页中断率：{self.cnt_page_faults/num_random_logical_addresses}")
+        print(f"进程 {self.process_id} 缺页中断率：{self.cnt_page_faults / num_random_logical_addresses}")
 
     @staticmethod
     def generate_logical_address():
-        offset = random.randint(0, 2**8-1)
+        offset = random.randint(0, 2 ** 8 - 1)
         page = number_of_certain_probability(x, p)
         address = (page << 8) + offset
         # print(hex(address))
@@ -73,25 +73,20 @@ class Process:
         page_number = logical_address // self.memory_manager.page_size
 
         self.memory_manager.cnt_access_memory += 1
-        
+
         val = 0
         if self.page_table['page'][page_number] is None:
             self.cnt_page_faults += 1
             # print("缺页")
             self.memory_manager.cnt_page_fault += 1
             val = self.memory_manager.folder_data[(self.process_id, page_number)]
-        
+
         self.page_algorithm.replace_page(self.memory_manager.memory, page_number, self.page_table, val)
 
-        
         offset = logical_address % self.memory_manager.page_size
 
         if idx % 50 == 0:
-            print(self.process_id, "逻辑地址",hex(logical_address), 
-                "页面内容", self.page_table,
-                "物理地址", hex(self.page_table['page'][page_number]*self.memory_manager.page_size+offset),
-                "物理地址内容", val) 
-              
-        
-        
-        
+            print(self.process_id, "逻辑地址", hex(logical_address),
+                  "页面内容", self.page_table,
+                  "物理地址", hex(self.page_table['page'][page_number] * self.memory_manager.page_size + offset),
+                  "物理地址内容", val)
