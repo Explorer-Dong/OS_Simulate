@@ -48,7 +48,7 @@ class MainMemory:
                 self.state[row['real_page_num']] = False
         del self.PCBs[pid]
 
-    def show(self) -> None:
+    def show(self) -> str: # TODO
         print('作业名\t占用页面数\t占用页框号')
         for pid, pcb in self.PCBs.items():
             cnt = 0
@@ -58,6 +58,7 @@ class MainMemory:
                     cnt += 1
                     real_pages.append(row['real_page_num'])
             print(f'{pid}\t{cnt}\t{real_pages}')
+        return "TODO"
 
     def get_real_page(self, pid: str, bytes_delta: int) -> str | int:
         pcb: PCB = self.PCBs[pid]
