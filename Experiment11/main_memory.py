@@ -9,7 +9,7 @@ class MainMemory:
         self.page_size = page_size  # 一个页面的字节数
         self.PCBs = {}  # 当前内存中的所有进程
 
-    def allocate(self, pid: str, bytes: int) -> str | None:
+    def allocate(self, pid: str, bytes: int) -> str | list[tuple[int, str]]:
         need_pages = math.ceil(bytes / self.page_size)
         if need_pages > self.real_page_num:
             return '内存不够分配'
@@ -19,6 +19,7 @@ class MainMemory:
 
         pcb = self.PCBs[pid]
         cnt = 0
+        change_info = []
         for index, row in pcb.page_table.iterrows():
             if row['valid'] == True:
                 continue
@@ -29,6 +30,7 @@ class MainMemory:
                 if self.state[i] == True:
                     continue
                 self.state[i] = True
+                change_info.append((i, 'Allocated'))
                 pcb.page_table.loc[index, 'real_page_num'] = i
                 break
 
@@ -37,19 +39,25 @@ class MainMemory:
             self.real_page_num -= 1
             if cnt == need_pages:
                 break
+        return change_info
 
-    def free(self, pid: str) -> str | None:
+
+    def free(self, pid: str) -> str | list[tuple[int, str]]:
         if pid not in self.PCBs:
             return '不存在当前进程'
 
         pcb = self.PCBs[pid]
+        change_info = []
         for _, row in pcb.page_table.iterrows():
             if row['valid'] is True:
                 self.real_page_num += 1
-                self.state[row['real_page_num']] = False
+                real_page_num = row['real_page_num']
+                self.state[real_page_num] = False
+                change_info.append((real_page_num, 'Freed'))
         del self.PCBs[pid]
+        return change_info
 
-    def show(self) -> str| dict:  # TODO
+    def show(self) -> dict:
         print('作业名\t占用页面数\t占用页框号')
         msg = {
             'title': ['作业名', '占用页面数', '占用页框号'],
@@ -67,6 +75,8 @@ class MainMemory:
         return msg
 
     def get_real_page(self, pid: str, bytes_delta: int) -> str | int:
+        if pid not in self.PCBs:
+            return '不存在当前进程！'
         pcb: PCB = self.PCBs[pid]
         if pcb.bytes < bytes_delta:
             return '越界！'
