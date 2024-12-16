@@ -2,7 +2,7 @@ import logging
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-
+from typing import Iterable
 import pandas as pd
 
 from main_memory import MainMemory
@@ -19,26 +19,33 @@ class Visualization(object):
         self.create_inputText()
         self.canvas = tk.Canvas(self.master, width=800, height=600)
         self.canvas.pack()
-        self.rowMaxNumber = 50
+        self.rowMaxNumber = 10
         self.draw_memory()
 
     def draw_memory(self):
         self.canvas.delete("all")
-        width, height = 10, 10
+        width, height = 20, 20
         n = self.rowMaxNumber
         self.rectangles = pd.DataFrame(
-            index=range(self.pageSize // n),
+            index=range(self.realPageNumber // n),
             columns=range(n),
         )
-        for k in range(self.pageSize):
+        for k in range(self.realPageNumber):
             j, i = divmod(k, n)
-            x = i * width + 30
-            y = j * height + 30
+            x = i * width + 300
+            y = j * height + 50
             rect_id = self.canvas.create_rectangle(
-                x, y, x + width, y + height, fill="gray",
+                x, y, x + width, y + height, fill="sky blue",
             )
             self.rectangles.loc[j, i] = rect_id
             # self.canvas.itemconfig(rect_id, fill="sky blue")
+
+    def update_memory(self, upd_list: Iterable):
+        for index, value in upd_list:
+            j, i = divmod(index, self.rowMaxNumber)
+            rect_id = self.rectangles.loc[j, i]
+            color = "gray" if value == "Allocated" else "sky blue"
+            self.canvas.itemconfig(rect_id, fill=color)
 
     def create_inputText(self):
         frame = tk.Frame(self.master)
@@ -71,6 +78,8 @@ class Visualization(object):
         state = self.mainMemory.allocate(pid, bytes)
         if type(state) is str:
             messagebox.showerror(title='Error', message=state)
+        else:
+            self.update_memory(state)
 
     def free_button(self):
         logging.info("Free button clicked")
@@ -78,10 +87,28 @@ class Visualization(object):
         state = self.mainMemory.free(pid)
         if type(state) is str:
             messagebox.showerror(title='Error', message=state)
+        else:
+            self.update_memory(state)
 
     def show_button(self):
         logging.info("Show button clicked")
-        text = self.mainMemory.show()
+        msg = self.mainMemory.show()
+        title = msg['title']
+        message = msg['msg']
+        window = tk.Toplevel(self.master)
+        tree = ttk.Treeview(window, columns=title, show='headings')
+        for i, col in enumerate(title):
+            tree.heading(i, text=col)
+            tree.column(i, anchor='center')
+
+        for row in message:
+            tree.insert('', 'end', values=row)
+        # 设置滚动条
+        scrollbar = ttk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
+        tree.configure(yscroll=scrollbar.set)
+
+        tree.pack()
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
     def getRealPage_button(self):
         logging.info("GetRealPage button clicked")
@@ -94,6 +121,7 @@ class Visualization(object):
             delta = bytes % self.pageSize
             real_address = str(result) + str(delta)
             logging.info(f"GetRealPage {pid}, {bytes}, real address: {real_address}")
+            messagebox.showinfo(title='GetRealPage', message=f"Real address: {real_address}")
 
 
 if __name__ == '__main__':
