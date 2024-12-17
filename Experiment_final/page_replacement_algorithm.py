@@ -19,12 +19,12 @@ class FIFO(PageReplacementAlgorithm):
             page_to_replace = self.queue[0]
             page_table['page'][page_to_replace] = None
             self.queue.pop(0)
-        
+
         idx = len(self.queue)
         # print(idx)
         self.queue.append(page_to_load)
         page_table['page'][page_to_load] = page_table['data'][idx]
-        
+
         memory[page_table['page'][page_to_load]] = val
         self.update(page_table)
 
@@ -50,7 +50,6 @@ class LRU(PageReplacementAlgorithm):
             page_table['page'][idx] = None
             self.order.pop(idx)
 
-        
         idx = len(self.order)
         self.order.append(page_to_load)
         page_table['page'][page_to_load] = page_table['data'][idx]
