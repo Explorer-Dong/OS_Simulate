@@ -1,8 +1,8 @@
 r"""
 This is the main window of the experiment.
 To run the experiment, you can use either of the following commands in the terminal:
-- g++ solution1.cpp -o solution.exe && ./solution.exe word1.txt word2.txt && python main.py
-- g++ solution1.cpp -o solution.exe && ./solution.exe word1.txt word2.txt && python main.py
+- g++ solution1.cpp -o solution.exe && solution.exe word1.txt word2.txt && python main.py
+- g++ solution1.cpp -o solution.exe && solution.exe word1.txt word2.txt && python main.py
 """
 
 import tkinter as tk
