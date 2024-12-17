@@ -44,16 +44,14 @@ class Visualization(object):
             id_list.append(text_id)
         self.id_dict[canvas_number] = id_list
 
-    def update_page(self, canvas_number, record_list):
+    def update_page(self, canvas_number: int, record_list: Iterable):
         id_list = self.id_dict[canvas_number]
         for i, record in enumerate(record_list):
-            if record == "Allocated":
-                color = "gray"
-            else:
-                color = "sky blue"
-            self.page_canvas[canvas_number].itemconfig(id_list[i], fill=color)
+            self.page_canvas[canvas_number].itemconfig(
+                id_list[i], text=str(record)
+            )
 
-    def clear_page(self, canvas_number):
+    def clear_page(self, canvas_number: int):
         self.page_canvas[canvas_number].delete("all")
         self.id_dict[canvas_number] = []
 
