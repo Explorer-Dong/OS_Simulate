@@ -1,13 +1,12 @@
-import logging
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
 from typing import Iterable
 import pandas as pd
+from config import msg_queue
+import queue
 
 
 class Visualization(object):
-    def __init__(self, master, realPageNumber=64, pageSize=1000):
+    def __init__(self, master: tk.Tk, realPageNumber=64, pageSize=1000):
         self.realPageNumber = realPageNumber
         self.pageSize = pageSize
         self.master = master
@@ -24,6 +23,8 @@ class Visualization(object):
         ]
         [c.pack(side=tk.LEFT, padx=10, pady=5) for c in self.page_canvas]
         self.id_dict = {}
+
+        self.check_msgQueue()
 
     def init_page(self, canvas_number):
         canvas = self.page_canvas[canvas_number]
@@ -71,12 +72,39 @@ class Visualization(object):
             )
             self.rectangles.loc[j, i] = rect_id
 
-    def update_memory(self, upd_list: Iterable):
-        for index, value in upd_list:
-            j, i = divmod(index, 8)
-            rect_id = self.rectangles.loc[j, i]
-            color = "gray" if value == "Allocated" else "sky blue"
-            self.memory_canvas.itemconfig(rect_id, fill=color)
+    def allocate_memory(self, index: int, pid: str):
+        print("Allocate memory: ", index, pid)
+        j, i = divmod(index, 8)
+        rect_id = self.rectangles.loc[j, i]
+        color = "gray"
+        self.memory_canvas.itemconfig(rect_id, fill=color)
+
+    def free_memory(self, index: int):
+        j, i = divmod(index, 8)
+        rect_id = self.rectangles.loc[j, i]
+        color = "sky blue"
+        self.memory_canvas.itemconfig(rect_id, fill=color)
+
+    def solve_message(self, msg):
+        """
+        1. "Allocated", pid, page_number
+        2. "Free", page_number
+        """
+        match msg[0]:
+            case "Allocate":
+                self.allocate_memory(msg[2], msg[1])
+            case "Free":
+                self.free_memory(msg[1])
+
+    def check_msgQueue(self):
+        try:
+            while True:
+                msg = msg_queue.get_nowait()
+                print("Visualization get message: ", msg)
+                self.solve_message(msg)
+        except queue.Empty:
+            pass
+        self.master.after(100, self.check_msgQueue)
 
 
 if __name__ == '__main__':
