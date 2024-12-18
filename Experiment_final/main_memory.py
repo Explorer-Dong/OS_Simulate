@@ -10,33 +10,49 @@ class MainMemory:
         if need_page_num > self.remain_real_page_num:
             return False
         
+        # 分配页表
+        for i in range(len(self.state)):
+            if self.state[i]:
+                continue
+            self.state[i] = True
+            self.remain_real_page_num -= 1
+            pro.page_table_id = i
+            break
+        
+        # 分配实页
         cnt = 0
-        for index, row in pro.page_table.iterrows():
+        for virt_page_id, row in pro.page_table.iterrows():
             if row['valid']:
                 continue
 
-            # 分配实页
-            pro.page_table.loc[index, 'valid'] = True
+            pro.page_table.loc[virt_page_id, 'valid'] = True
             for i in range(len(self.state)):
                 if self.state[i]:
                     continue
                 self.state[i] = True
-                pro.page_table.loc[index, 'real_page_id'] = i
+                pro.page_table.loc[virt_page_id, 'real_page_id'] = i
+                pro.valid_virt_page_queue.append(virt_page_id)
                 break
 
-            # 计数
             cnt += 1
             self.remain_real_page_num -= 1
-            if cnt == need_page_num:
+            if cnt == need_page_num - 1:
                 break
         return True
 
     def free(self, pro) -> None:
-        for _, row in pro.page_table.iterrows():
+        # 释放页表
+        self.remain_real_page_num += 1
+        real_page_id = pro.page_table_id
+        self.state[real_page_id] = False
+        
+        # 释放实页
+        for virt_page_id, row in pro.page_table.iterrows():
             if row['valid']:
                 self.remain_real_page_num += 1
                 real_page_id = row['real_page_id']
                 self.state[real_page_id] = False
+                pro.valid_virt_page_queue.remove(virt_page_id)
 
     # def get_real_page(self, pid: str, bytes_delta: int) -> str | int:
     #     pcb: PCB = self.PCBs[pid]

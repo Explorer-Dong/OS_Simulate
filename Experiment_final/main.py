@@ -1,5 +1,4 @@
 from process import Process
-import threading
 from config import *
 
 if __name__ == '__main__':
@@ -7,9 +6,9 @@ if __name__ == '__main__':
     processes = []
     threads = []
     for i in range(process_num):
-        pid = f'pro {i + 1}'
+        pid = f'pro {i}'
 
-        pro = Process(pid)
+        pro = Process(pid, access_num=3, algo='lru' if i % 2 == 1 else 'fifo')
         processes.append(pro)
         
         thread = threading.Thread(target=pro.run)
