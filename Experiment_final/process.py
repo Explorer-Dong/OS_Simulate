@@ -31,6 +31,9 @@ class Process:
         while True:
             ok = self.__acquire_page()
             if ok:
+                msg_queue.put(
+                    ('new_page', self.pid)
+                )
                 self.__execute()
                 self.__release_page()
                 break
@@ -43,7 +46,6 @@ class Process:
         allocate_cond = main_mem.allocate(
             need_page_num=allocate_per_process, pro=self
         )
-        time.sleep(1)
         mutex.release()
         return allocate_cond
 
@@ -54,12 +56,18 @@ class Process:
         # 内存访问
         for virt_page_id in virt_page_ids:
             real_page_id = self.__access_main_mem(virt_page_id)
+            msg_queue.put(
+                ('update_page', self.pid, self.page_table)
+            )
             self.access_info['details'].append((self.pid, virt_page_id, real_page_id))
             time.sleep(np.random.uniform(0, 0.1))
 
     def __release_page(self) -> None:
         mutex.acquire()
         main_mem.free(pro=self)
+        msg_queue.put(
+            ('delete_page', self.pid)
+        )
         mutex.release()
 
     def __access_main_mem(self, virt_page_id: int) -> int:

@@ -19,7 +19,7 @@ class MainMemory:
             self.remain_real_page_num -= 1
             pro.page_table_id = i
             msg_queue.put(
-                ("Allocate", pro.pid, i)
+                ("allocate_memory", i, pro.pid)
             )
             break
 
@@ -35,9 +35,8 @@ class MainMemory:
                     continue
                 self.state[i] = True
                 msg_queue.put(
-                    ("Allocate", pro.pid, i)
+                    ("allocate_memory", i, pro.pid)
                 )
-                print(f"Allocate {pro.pid} {i}")
                 pro.page_table.loc[virt_page_id, 'real_page_id'] = i
                 pro.valid_virt_page_queue.append(virt_page_id)
                 break
@@ -54,7 +53,7 @@ class MainMemory:
         real_page_id = pro.page_table_id
         self.state[real_page_id] = False
         msg_queue.put(
-            ("Free", real_page_id)
+            ("free_memory", real_page_id)
         )
 
         # 释放实页
@@ -65,7 +64,7 @@ class MainMemory:
                 self.state[real_page_id] = False
                 pro.valid_virt_page_queue.remove(virt_page_id)
                 msg_queue.put(
-                    ("Free", real_page_id)
+                    ("free_memory", real_page_id)
                 )
 
     # def get_real_page(self, pid: str, bytes_delta: int) -> str | int:
