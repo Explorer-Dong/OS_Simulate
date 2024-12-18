@@ -32,7 +32,7 @@ class Process:
             ok = self.__acquire_page()
             if ok:
                 msg_queue.put(
-                    ('new_page', self.pid)
+                    ('new_page', self.pid, self.page_replace_algo)
                 )
                 self.__execute()
                 self.__release_page()

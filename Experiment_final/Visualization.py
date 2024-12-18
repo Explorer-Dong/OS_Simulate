@@ -12,14 +12,14 @@ class Visualization(object):
         self.pageSize = pageSize
         self.master = master
 
-        self.memory_canvas = tk.Canvas(self.master, width=300, height=300)
+        self.memory_canvas = tk.Canvas(self.master, width=400, height=400)
         self.memory_canvas.pack()
         self.draw_memory()
 
         canvas = tk.Canvas(self.master, width=100, height=400)
         canvas.pack()
         self.page_canvas = [
-            tk.Canvas(canvas, width=120, height=400, bg="white")
+            tk.Canvas(canvas, width=150, height=400, bg="white")
             for i in range(6)
         ]
         [c.pack(side=tk.LEFT, padx=10, pady=5) for c in self.page_canvas]
@@ -28,7 +28,7 @@ class Visualization(object):
 
         self.master.after(3000, self.check_msgQueue)
 
-    def init_page(self, pid: str):
+    def init_page(self, pid: str, replace_algorithm: str):
         canvas_number = -1
         for i in range(6):
             if self.page8pid.get(i, -1) == -1:
@@ -38,28 +38,38 @@ class Visualization(object):
                 break
 
         canvas = self.page_canvas[canvas_number]
+        canvas.create_text(
+            70, 20,
+            text=pid,
+            font=("Arial", 15),
+        )
+        canvas.create_text(
+            70, 60,
+            text=replace_algorithm,
+            font=("Arial", 15),
+        )
         canvas.create_rectangle(
-            10, 10, 110, 400,
+            20, 80, 130, 400,
         )
         canvas.create_line(
-            60, 10, 60, 200
+            75, 80, 75, 400
         )
-        height = 40
+        height = 35
         id_list = []
         for i in range(9):
             canvas.create_line(
-                10, 10 + i * height,
-                110, 10 + i * height,
+                20, 80 + i * height,
+                130, 80 + i * height,
             )
             text_id1 = canvas.create_text(
-                30, 10 + height // 2 + i * height,
-                text=str(i),
-                font=("Arial", 7),
+                45, 80 + height // 2 + i * height,
+                text="",
+                font=("Arial", 10),
             )
             text_id2 = canvas.create_text(
-                80, 10 + height // 2 + i * height,
-                text=str(i),
-                font=("Arial", 7),
+                100, 80 + height // 2 + i * height,
+                text="",
+                font=("Arial", 10),
             )
             id_list.append([text_id1, text_id2])
         self.id_dict[canvas_number] = id_list
@@ -90,11 +100,16 @@ class Visualization(object):
 
     def draw_memory(self):
         self.memory_canvas.delete("all")
-        width, height = 30, 30
+        width, height = 40, 40
         self.rectangles = pd.DataFrame(
             index=range(8),
             columns=range(8),
         )
+        self.memory_text = pd.DataFrame(
+            index=range(8),
+            columns=range(8),
+        )
+
         for k in range(self.realPageNumber):
             j, i = divmod(k, 8)
             x = i * width + 50
@@ -102,19 +117,29 @@ class Visualization(object):
             rect_id = self.memory_canvas.create_rectangle(
                 x, y, x + width, y + height, fill="sky blue",
             )
+            text_id = self.memory_canvas.create_text(
+                x + width // 2, y + height // 2,
+                text="",
+                font=("Arial", 10),
+            )
             self.rectangles.loc[j, i] = rect_id
+            self.memory_text.loc[j, i] = text_id
 
     def allocate_memory(self, index: int, pid: str):
         j, i = divmod(index, 8)
         rect_id = self.rectangles.loc[j, i]
+        text_id = self.memory_text.loc[j, i]
         color = "gray"
         self.memory_canvas.itemconfig(rect_id, fill=color)
+        self.memory_canvas.itemconfig(text_id, text=pid)
 
     def free_memory(self, index: int):
         j, i = divmod(index, 8)
         rect_id = self.rectangles.loc[j, i]
+        text_id = self.memory_text.loc[j, i]
         color = "sky blue"
         self.memory_canvas.itemconfig(rect_id, fill=color)
+        self.memory_canvas.itemconfig(text_id, text="")
 
     def solve_message(self, msg):
         """
@@ -130,7 +155,7 @@ class Visualization(object):
             case "free_memory":
                 self.free_memory(msg[1])
             case "new_page":
-                self.init_page(msg[1])
+                self.init_page(msg[1], msg[2])
             case "update_page":
                 self.update_page(msg[1], msg[2])
             case "delete_page":
