@@ -30,3 +30,16 @@ if __name__ == '__main__':
         thread.join()
     for process in processes:
         print(process.info())
+
+    # import pandas as pd
+    # while msg_queue.empty() is False:
+    #     msg = msg_queue.get()
+    #     if msg[0] == 'update_page':
+    #         task_name = msg[1]
+    #         df: pd.DataFrame = msg[2]
+    #         for i in range(64):
+    #             if df.iloc[i]['valid']:
+    #                 print(df.iloc[i]['real_page_id'], end=' ')
+    #         print('\n\n')
+    #     else:
+    #         print(msg)

@@ -1,5 +1,6 @@
 import time
 import tkinter as tk
+from tkinter import ttk
 from typing import Iterable
 import pandas as pd
 from config import msg_queue
@@ -12,9 +13,23 @@ class Visualization(object):
         self.pageSize = pageSize
         self.master = master
 
-        self.memory_canvas = tk.Canvas(self.master, width=400, height=400)
-        self.memory_canvas.pack()
+        top_frame = tk.Frame(self.master)
+        top_frame.pack(side=tk.TOP)
+        self.memory_canvas = tk.Canvas(top_frame, width=400, height=400)
+        self.memory_canvas.pack(side=tk.LEFT)
         self.draw_memory()
+
+        button_frame = tk.Frame(top_frame)
+        button_frame.pack(side=tk.LEFT)
+        ttk.Button(
+            button_frame, text="start",
+            command=self.start_simulation
+        ).pack(side=tk.TOP)
+
+        ttk.Button(
+            button_frame, text="pause",
+            command=self.pause_simulation
+        ).pack(side=tk.TOP)
 
         canvas = tk.Canvas(self.master, width=100, height=400)
         canvas.pack()
@@ -26,7 +41,8 @@ class Visualization(object):
         self.id_dict = {}
         self.page8pid = {}
 
-        self.master.after(3000, self.check_msgQueue)
+        self.running = False
+
 
     def init_page(self, pid: str, replace_algorithm: str):
         canvas_number = -1
@@ -162,12 +178,21 @@ class Visualization(object):
                 self.clear_page(msg[1])
 
     def check_msgQueue(self):
+        if not self.running:
+            return
         try:
             msg = msg_queue.get_nowait()
             self.solve_message(msg)
-            self.master.after(500, self.check_msgQueue)
+            self.master.after(200, self.check_msgQueue)
         except queue.Empty:
             self.master.after(100, self.check_msgQueue)
+
+    def start_simulation(self):
+        self.running = True
+        self.check_msgQueue()
+
+    def pause_simulation(self):
+        self.running = False
 
 
 if __name__ == '__main__':
