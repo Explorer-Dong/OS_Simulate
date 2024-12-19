@@ -17,12 +17,12 @@ def gen_virt_page_id(data_range: int, sample_num: int) -> list[int]:
 class Process:
     def __init__(self, pid: str, access_num: int = 200, algo: str = 'lru'):
         self.pid = pid
-        self.page_replace_algo = algo  # 进程的页面替换算法
-        self.access_num = access_num  # 每一个进程访问内存的次数
+        self.page_replace_algo = algo                      # 进程的页面替换算法
+        self.access_num = access_num                       # 每一个进程访问内存的次数
         self.access_info = {'fail_cnt': 0, 'details': []}  # 访问情况
-        self.page_table_id = None  # 进程页表地址
-        self.valid_virt_page_queue = deque()  # 已分配实页的虚页队列
-        self.page_table = pd.DataFrame({  # 进程页表
+        self.page_table_id = None                          # 进程页表地址
+        self.valid_virt_page_queue = deque()               # 已分配实页的虚页队列
+        self.page_table = pd.DataFrame({                   # 进程页表
             'valid': [False] * virt_page_num,
             'real_page_id': [None] * virt_page_num
         })
@@ -53,7 +53,7 @@ class Process:
         return allocate_cond
 
     def __execute(self) -> None:
-        # 生成 200 条逻辑地址（此处只生成虚页号，页内偏移省略）
+        # 生成 self.access_num 条逻辑地址（此处只生成虚页号，页内偏移省略）
         virt_page_ids = gen_virt_page_id(virt_page_num, self.access_num)
 
         # 内存访问

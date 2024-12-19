@@ -11,13 +11,14 @@ if __name__ == '__main__':
     for i in range(process_num):
         pid = f'pro {i}'
 
-        pro = Process(pid, access_num=3, algo='lru' if i % 2 == 1 else 'fifo')
+        pro = Process(pid, access_num=access_num, algo='lru' if i % 2 == 1 else 'fifo')
         processes.append(pro)
         
         thread = threading.Thread(target=pro.run)
         threads.append(thread)
         thread.start()
 
+    # 启动可视化
     root = tk.Tk()
     root.title('Visualization')
     root.attributes('-fullscreen', True)
@@ -29,17 +30,4 @@ if __name__ == '__main__':
     for thread in threads:
         thread.join()
     for process in processes:
-        print(process.info())
-
-    # import pandas as pd
-    # while msg_queue.empty() is False:
-    #     msg = msg_queue.get()
-    #     if msg[0] == 'update_page':
-    #         task_name = msg[1]
-    #         df: pd.DataFrame = msg[2]
-    #         for i in range(64):
-    #             if df.iloc[i]['valid']:
-    #                 print(df.iloc[i]['real_page_id'], end=' ')
-    #         print('\n\n')
-    #     else:
-    #         print(msg)
+        print(f"{process.pid} 的缺页率为 {process.info()['fail_cnt'] / access_num}")

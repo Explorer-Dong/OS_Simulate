@@ -4,7 +4,7 @@ from config import *
 class MainMemory:
     def __init__(self):
         self.remain_real_page_num = real_page_num  # 剩余实页的数量
-        self.state = [False] * real_page_num  # 实页是否被占用
+        self.state = [False] * real_page_num       # 实页是否被占用
 
     def allocate(self, need_page_num: int, pro) -> bool:
         # 内存不够分配
@@ -66,15 +66,6 @@ class MainMemory:
                 msg_queue.put(
                     ("free_memory", real_page_id)
                 )
-
-    # def get_real_page(self, pid: str, bytes_delta: int) -> str | int:
-    #     pcb: PCB = self.PCBs[pid]
-    #     if pcb.bytes < bytes_delta:
-    #         return '越界！'
-    #
-    #     virt_page = bytes_delta // page_size
-    #     real_page = pcb.page_table.loc[virt_page, 'real_page_num']
-    #     return real_page
 
 
 main_mem = MainMemory()
