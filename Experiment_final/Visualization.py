@@ -23,13 +23,15 @@ class Visualization(object):
         button_frame.pack(side=tk.LEFT)
         ttk.Button(
             button_frame, text="start",
-            command=self.start_simulation
-        ).pack(side=tk.TOP)
+            command=self.start_simulation,
+            width=20, padding=30
+        ).pack(side=tk.TOP, pady=10)
 
         ttk.Button(
             button_frame, text="pause",
-            command=self.pause_simulation
-        ).pack(side=tk.TOP)
+            command=self.pause_simulation,
+            width=20, padding=30
+        ).pack(side=tk.TOP, pady=10)
 
         canvas = tk.Canvas(self.master, width=100, height=400)
         canvas.pack()
