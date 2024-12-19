@@ -34,6 +34,9 @@ class Process:
                 msg_queue.put(
                     ('new_page', self.pid, self.page_replace_algo)
                 )
+                msg_queue.put(
+                    ('update_page', self.pid, self.page_table, None)
+                )
                 self.__execute()
                 self.__release_page()
                 break
@@ -57,7 +60,7 @@ class Process:
         for virt_page_id in virt_page_ids:
             real_page_id = self.__access_main_mem(virt_page_id)
             msg_queue.put(
-                ('update_page', self.pid, self.page_table)
+                ('update_page', self.pid, self.page_table, virt_page_id)
             )
             self.access_info['details'].append((self.pid, virt_page_id, real_page_id))
             time.sleep(np.random.uniform(0, 0.1))

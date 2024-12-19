@@ -92,19 +92,22 @@ class Visualization(object):
             id_list.append([text_id1, text_id2])
         self.id_dict[canvas_number] = id_list
 
-    def update_page(self, pid: str, page_table: pd.DataFrame):
+    def update_page(self, pid: str, page_table: pd.DataFrame, target: int|None):
         canvas_number = self.page8pid[pid]
         id_list = self.id_dict[canvas_number]
         cnt = 0
         for virtual_id, row in page_table.iterrows():
-            if row['valid'] == True:
+            if row['valid'] is True:
                 real_id = row['real_page_id']
-
+                color = "red" if virtual_id == target else "black"
+                font = ("Comic Sans MS", 15) if virtual_id == target else ("Arial", 10)
                 self.page_canvas[canvas_number].itemconfig(
                     id_list[cnt][0], text=str(virtual_id),
+                    fill=color, font=font,
                 )
                 self.page_canvas[canvas_number].itemconfig(
                     id_list[cnt][1], text=str(real_id),
+                    fill=color, font=font
                 )
 
                 cnt += 1
@@ -175,7 +178,7 @@ class Visualization(object):
             case "new_page":
                 self.init_page(msg[1], msg[2])
             case "update_page":
-                self.update_page(msg[1], msg[2])
+                self.update_page(msg[1], msg[2], msg[3])
             case "delete_page":
                 self.clear_page(msg[1])
 
